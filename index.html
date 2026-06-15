@@ -208,6 +208,7 @@ input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(29,158,117,.13
     </div>
   </div>
   <div class="gauto" id="h-stats" style="margin-bottom:14px"></div>
+  <div id="pending-requests-wrap" style="display:none;margin-bottom:16px"></div>
   <div class="sec-title"><i class="ti ti-users"></i> Squadra</div>
   <div id="h-list"></div>
 </div>
@@ -436,7 +437,7 @@ async function showHome(){
   var totW=A.reduce(function(s,a){return s+totalWins(a)},0),totL=A.reduce(function(s,a){return s+totalLosses(a)},0),diff=totW-totL;
   document.getElementById('h-stats').innerHTML=sc(A.length,'Atleti')+sc(totOri,'Ori 🥇','var(--gold)')+sc(totAr,'Argenti','#C0C8D8')+sc(totBr,'Bronzi','#CD8040')+sc(totW,'Vittorie','var(--teal)')+sc(totL,'Sconfitte','var(--red)')+sc((diff>0?'+':'')+diff,'Diff.',diff>=0?'var(--teal)':'var(--red)');
   var list=document.getElementById('h-list');
-  if(!A.length){list.innerHTML=ep('ti-users','Nessun atleta.<br>Clicca "+ Atleta" per iniziare.');return}
+  if(!A.length){list.innerHTML=ep('ti-users','Nessun atleta.<br>Clicca "+ Atleta" per iniziare.');loadPendingRequests();return}
   list.innerHTML=A.map(function(a,i){
     var ori=(a.records.gare||[]).filter(function(r){return r.result==='1° posto'}).length;
     var W=totalWins(a),L=totalLosses(a),tot=W+L;
