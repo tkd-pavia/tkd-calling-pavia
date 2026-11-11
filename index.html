@@ -881,7 +881,33 @@ function rGare(c,a){
     histHTML=ep('ti-trophy','Nessun torneo registrato');
   }
 
-  c.innerHTML=careerHTML+formHTML+histHTML;
+  // ── Risultati per categoria ────────────────────────────────────────
+  var catHTML='';
+  if(gare.length){
+    var catKey=function(s){s=s||'';var w=(s.match(/([+-]\s?\d+)\s*kg/i)||[])[1];w=w?w.replace(/\s/g,''):'?';
+      var age=/cadet/i.test(s)?'Cadetti':/junior/i.test(s)?'Junior':/youth/i.test(s)?'Youth':/olymp|olimpic/i.test(s)?'Olimpica':/senior/i.test(s)?'Senior':/master/i.test(s)?'Master':'—';
+      return {k:age+' '+w+' kg',age:age,w:w}};
+    var cats={};
+    gare.forEach(function(g){var ck=catKey(g.category);var o=cats[ck.k]||(cats[ck.k]={k:ck.k,n:0,o:0,a:0,b:0,W:0,L:0,last:'',lastName:''});
+      o.n++;if(g.result==='1° posto')o.o++;else if(g.result==='2° posto')o.a++;else if(g.result==='3° posto')o.b++;
+      (g.matches||[]).forEach(function(m){if(m.esito==='vittoria')o.W++;else if(m.esito==='sconfitta')o.L++;});
+      if((g.date||'')>o.last){o.last=g.date||'';o.lastName=g.name||'';}});
+    var list=Object.keys(cats).map(function(k){return cats[k]}).sort(function(x,y){return y.last.localeCompare(x.last)});
+    var yearAgo=new Date(Date.now()-365*864e5).toISOString().slice(0,10);
+    catHTML='<div class="card">'+st('ti-category','Risultati per categoria','var(--teal)')+
+      '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px">'+
+      '<tr style="color:var(--muted);text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em">'+
+      '<th style="padding:6px 4px">Categoria</th><th style="padding:6px 4px;text-align:center">Gare</th><th style="padding:6px 4px;text-align:center">🥇</th><th style="padding:6px 4px;text-align:center">🥈</th><th style="padding:6px 4px;text-align:center">🥉</th><th style="padding:6px 4px;text-align:center">V-S</th><th style="padding:6px 4px;text-align:center">Win%</th><th style="padding:6px 4px">Ultima gara</th></tr>';
+    list.forEach(function(o){var t=o.W+o.L,wr=t?Math.round(o.W/t*100):null,act=o.last>=yearAgo;
+      catHTML+='<tr style="border-top:1px solid var(--border)">'+
+        '<td style="padding:7px 4px;font-weight:700;white-space:nowrap">'+o.k+(act?' <span style="font-size:9px;color:var(--teal);border:1px solid var(--teal);border-radius:8px;padding:0 5px;margin-left:3px">attiva</span>':'')+'</td>'+
+        '<td style="text-align:center">'+o.n+'</td><td style="text-align:center;color:var(--gold)">'+(o.o||'·')+'</td><td style="text-align:center">'+(o.a||'·')+'</td><td style="text-align:center;color:#CD8040">'+(o.b||'·')+'</td>'+
+        '<td style="text-align:center">'+o.W+'-'+o.L+'</td><td style="text-align:center;color:'+(wr===null?'var(--muted)':wr>=50?'var(--teal)':'var(--red)')+'">'+(wr===null?'—':wr+'%')+'</td>'+
+        '<td style="padding:7px 4px;color:var(--muted);white-space:nowrap">'+(o.last?o.last.split('-').reverse().join('/'):'')+' · '+o.lastName+'</td></tr>';});
+    catHTML+='</table></div><p style="font-size:11px;color:var(--muted);margin-top:8px">"Attiva" = categoria in cui ha gareggiato negli ultimi 12 mesi. V-S conta gli incontri registrati in ogni torneo.</p></div>';
+  }
+
+  c.innerHTML=careerHTML+catHTML+formHTML+histHTML;
   _gmIdx=0;
   addGaraMatch();
 }
